@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "353218599595",
+    "firebase_url": "https://catch-me-8f2ed.firebaseio.com",
+    "project_id": "catch-me-8f2ed",
+    "storage_bucket": "catch-me-8f2ed.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:353218599595:android:7ebfc89162d9cbe727b5ee",
+        "android_client_info": {
+          "package_name": "com.c4coding.catch_me"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "353218599595-30o4i6p44j3q579r4on03js5pst2i6tr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDq7XSn-ZlpNbllR6BxfK5rkH3IW05K2aE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "353218599595-30o4i6p44j3q579r4on03js5pst2i6tr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
