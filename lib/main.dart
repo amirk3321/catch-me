@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
             return BlocBuilder<AuthBloc,AuthState>(
               builder: (context,state){
                 if (state is AuthenticatedAuth){
-                  return HomeScreen();
+                  return HomeScreen(uid: state.uid,);
                 }
                 if (state is UnAuthenticatedAuth){
                   return PhoneVerifyScreen();

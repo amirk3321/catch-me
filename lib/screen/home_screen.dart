@@ -1,11 +1,14 @@
+import 'package:catch_me/bloc/authentication/bloc.dart';
 import 'package:catch_me/screen/phone_verify_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../google_screen.dart';
 
 
 class HomeScreen extends StatefulWidget{
-    HomeScreen({Key key}) :super(key : key);
+    final String uid;
+    HomeScreen({Key key,this.uid}) :super(key : key);
   @override
   State<StatefulWidget> createState() => HomeScreenState();
 }
@@ -30,7 +33,9 @@ class HomeScreenState extends State<HomeScreen>
               Icons.settings,
               color: Colors.white,
             ),
-            onPressed: () {},
+            onPressed: () {
+              BlocProvider.of<AuthBloc>(context).dispatch(LoggedOut());
+            },
           ),
         ],
         leading: Stack(
@@ -73,7 +78,7 @@ class HomeScreenState extends State<HomeScreen>
       body: TabBarView(
         children: [
           GoogleScreen(),
-          PhoneVerifyScreen(),
+          Center(child: Text("Page 2\nuid${widget.uid}")),
           Center(child: Text("Page 3")),
         ],
         controller: _tabController,

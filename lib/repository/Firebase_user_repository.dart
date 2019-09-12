@@ -57,5 +57,8 @@ class FirebaseUserRepository implements BaseRepo {
    return (await _firebaseAuth.currentUser()).uid;
   }
 
+  Future<void> signIn(String email,String password)async{
+    await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
+  }
 
 }

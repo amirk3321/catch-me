@@ -17,6 +17,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async* {
     if (event is AppStartedEvent) {
       yield* _mapAppStartedEventToState();
+    }else if (event is LoggedIn){
+      yield* _mapLoggedInToState();
+    }else if(event is LoggedOut){
+      yield* _mapLoggedOutToState();
     }
   }
 
@@ -25,12 +29,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       var isSignIn = await _userRepository.isSignIn();
       if (isSignIn) {
-       yield AuthenticatedAuth();
+        String uid=await _userRepository.getCurrentUID();
+       yield AuthenticatedAuth(uid: uid);
       } else {
         yield UnAuthenticatedAuth();
       }
     } catch (_) {
       yield UnAuthenticatedAuth();
     }
+  }
+
+  Stream<AuthState> _mapLoggedInToState() async*{
+    String uid=await _userRepository.getCurrentUID();
+    yield AuthenticatedAuth(uid: uid);
+  }
+  Stream<AuthState> _mapLoggedOutToState() async*{
+    yield UnAuthenticatedAuth();
   }
 }
