@@ -19,5 +19,6 @@ class VerifyPhoneNumber extends PhoneAuthEvent{
 
 class VerifySMSCode extends PhoneAuthEvent{
   final String smsCode;
-  VerifySMSCode({this.smsCode})  : super([smsCode]);
+  final String name;
+  VerifySMSCode({this.smsCode,this.name})  : super([smsCode,name]);
 }

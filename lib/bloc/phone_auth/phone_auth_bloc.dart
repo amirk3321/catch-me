@@ -39,6 +39,7 @@ class PhoneAuthBloc extends Bloc<PhoneAuthEvent, PhoneAuthState> {
     yield LoadingPhoneAuth();
     try{
       await _userRepository.onSignInWithPhoneNumber(smsCode: event.smsCode);
+      await _userRepository.getInitializedCurrentUser(name: event.name);
       yield SuccessPhoneAuth();
     }catch(_){
       yield FailurePhoneAuth();

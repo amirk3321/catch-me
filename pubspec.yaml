@@ -23,17 +23,31 @@ dependencies:
   #state management
   flutter_bloc: ^0.21.0
   equatable: ^0.5.1
-  bloc: ^0.15.0
 
   #firebase
   firebase_auth: ^0.14.0+5
-  cloud_firestore: ^0.12.9+3
+  cloud_firestore: ^0.12.9+5
+  #cloud_firestore: ^0.12.9+3
 
   #google_map
-  google_maps_flutter: ^0.5.21
+  google_maps_flutter: ^0.5.21+8
+  location: ^2.3.5
 
   #Shared Pref
-  shared_preferences: ^0.5.3+4
+  shared_preferences: ^0.5.4
+  streaming_shared_preferences: ^1.0.1
+
+  curved_navigation_bar: ^0.3.1
+  fancy_bottom_navigation: ^0.3.2
+
+  #dateFormat
+  intl: ^0.16.0
+
+  #message shape bubble
+  bubble: ^1.1.9+1
+
+    #image picker no-config for android
+  image_picker: 0.6.0+20
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -58,7 +72,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   #assets:
-
+  assets:
+  - assets/default.png
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

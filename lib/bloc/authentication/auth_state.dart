@@ -9,6 +9,7 @@ abstract class AuthState extends Equatable {
 class UninitializedAuth extends AuthState{
   @override
   String toString() => 'UninitializedAuth';
+
 }
 
 class AuthenticatedAuth extends AuthState{

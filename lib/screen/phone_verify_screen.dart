@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:catch_me/bloc/authentication/auth_bloc.dart';
 import 'package:catch_me/bloc/authentication/auth_event.dart';
 import 'package:catch_me/bloc/authentication/auth_state.dart';
@@ -34,57 +36,88 @@ class PhoneVerifyScreenState extends State<PhoneVerifyScreen> {
     return Scaffold(
       body: BlocProvider<PhoneAuthBloc>(
           builder: (_) => _phoneAuthBloc,
-          child: BlocListener<PhoneAuthBloc,PhoneAuthState>(
+          child: BlocListener<PhoneAuthBloc, PhoneAuthState>(
             listener: (context, state) {
-              if (state is LoadingPhoneAuth){
+              if (state is LoadingPhoneAuth) {
                 Scaffold.of(context).showSnackBar(SnackBar(
                   content: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Text('Wait for moument...',style: TextStyle(fontSize: 16,),),
+                      Text(
+                        'Wait for moument...',
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
                       CircularProgressIndicator(),
                     ],
                   ),
                 ));
               }
               if (state is ReceiveSMSPhoneAuth) {
-                Scaffold.of(context).showSnackBar(SnackBar(
-                  duration: const Duration(minutes: 2),
-                  content: Row(
-                    children: <Widget>[
-                       Flexible(
-                         child:  TextField(
-                           controller: _smsCodeController,
-                           keyboardType: TextInputType.text,
-                           maxLength: 6,
-                           decoration: InputDecoration(
-                             prefixIcon: Icon(Icons.verified_user),
-                             hintText: 'Your verification code',
-                           ),
-                         ),
-                       ),
-                      Container(
-                        decoration:BoxDecoration(
-                          color: Colors.green[500],
-                          borderRadius: BorderRadius.circular(50),
+                Scaffold.of(context).showSnackBar(
+                  SnackBar(
+                    duration: const Duration(minutes: 2),
+                    content: Row(
+                      children: <Widget>[
+                        Flexible(
+                          child: TextField(
+                            controller: _smsCodeController,
+                            keyboardType: TextInputType.number,
+                            maxLength: 6,
+                            decoration: InputDecoration(
+                              prefixIcon: Icon(Icons.verified_user),
+                              hintText: 'Your verification code',
+                            ),
+                          ),
                         ),
-                        child: IconButton(
-                          icon: Icon(Icons.arrow_forward,color: Colors.white,),
-                          onPressed: (){
-                            if (_smsCodeController.text.isNotEmpty)
-                              _phoneAuthBloc.dispatch(VerifySMSCode(smsCode: _smsCodeController.text));
-                          },
-                        ),
-                      )
-                    ],
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.green[500],
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.arrow_forward,
+                              color: Colors.white,
+                            ),
+                            onPressed: () {
+                              if (_smsCodeController.text.isNotEmpty) {
+                                _phoneAuthBloc.dispatch(VerifySMSCode(
+                                    smsCode: _smsCodeController.text,
+                                    name: _nameController.text ??
+                                        'alien${Random.secure().nextInt(50)}'));
+                                Scaffold.of(context).hideCurrentSnackBar();
+                              }
+                            },
+                          ),
+                        )
+                      ],
+                    ),
                   ),
-                ));
-              }
-              if (state is SuccessPhoneAuth){
-                BlocProvider.of<AuthBloc>(context).dispatch(
-                  LoggedIn()
                 );
-
+              }
+              if (state is SuccessPhoneAuth) {
+                BlocProvider.of<AuthBloc>(context).dispatch(LoggedIn());
+              }
+              if (state is FailurePhoneAuth) {
+                Scaffold.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text(
+                          'Something wrong please check...',
+                          style: TextStyle(
+                            fontSize: 16,
+                          ),
+                        ),
+                        Icon(Icons.error),
+                      ],
+                    ),
+                    backgroundColor: Colors.red,
+                  ),
+                );
               }
             },
             child: BlocBuilder<PhoneAuthBloc, PhoneAuthState>(
@@ -141,11 +174,8 @@ class PhoneVerifyScreenState extends State<PhoneVerifyScreen> {
                             ),
                             onPressed: () {
                               if (_phoneNumberController.text.isNotEmpty) {
-                                _phoneAuthBloc.dispatch(
-                                    VerifyPhoneNumber(
-                                        phoneNumber: _phoneNumberController.text
-                                    )
-                                );
+                                _phoneAuthBloc.dispatch(VerifyPhoneNumber(
+                                    phoneNumber: _phoneNumberController.text));
                               }
                             },
                           ),
@@ -156,8 +186,7 @@ class PhoneVerifyScreenState extends State<PhoneVerifyScreen> {
                 );
               },
             ),
-          )
-      ),
+          )),
     );
   }
 }
