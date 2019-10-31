@@ -1,6 +1,9 @@
 import 'package:catch_me/model/chat_channel.dart';
 import 'package:catch_me/model/chat_channel_entity.dart';
 import 'package:catch_me/model/friends.dart';
+import 'package:catch_me/model/friends_entity.dart';
+import 'package:catch_me/model/location_channel.dart';
+import 'package:catch_me/model/location_channel_entity.dart';
 import 'package:catch_me/model/text_message.dart';
 import 'package:catch_me/model/text_message_entity.dart';
 import 'package:catch_me/model/user.dart';
@@ -14,6 +17,7 @@ class FirebaseUserRepository implements BaseRepo {
   FirebaseAuth _firebaseAuth;
   final _userCollection = Firestore.instance.collection('user');
   final _chatChannel = Firestore.instance.collection('chatChannel');
+  final _LocationChannel = Firestore.instance.collection('LocationChannel');
   String verificationId;
 
   FirebaseUserRepository({FirebaseUserRepository firebaseUserRepository})
@@ -163,6 +167,10 @@ class FirebaseUserRepository implements BaseRepo {
 
       newChatChannel.setData(ChatChannel(
               channelId: newChatChannel.documentID,
+              uid: (await _firebaseAuth.currentUser()).uid,
+              otherUId: otherUID,
+              isLocationCurrentUser: false,
+              isLocationOtherUser: false,
               userIds: [(await _firebaseAuth.currentUser()).uid, otherUID])
           .toEntity()
           .toDocument());
@@ -220,6 +228,7 @@ class FirebaseUserRepository implements BaseRepo {
   }
 
   //add to chat screen
+
   Future<void> addToStartChat({Friends friends}) async {
     _userCollection
         .document((await _firebaseAuth.currentUser()).uid)
@@ -227,20 +236,94 @@ class FirebaseUserRepository implements BaseRepo {
         .document(friends.otherUID)
         .get()
         .then((friend) async {
-      if (!friend.exists) {
-        _userCollection
-            .document((await _firebaseAuth.currentUser()).uid)
-            .collection("friends")
-            .document(friends.otherUID)
-            .setData(Friends(
-          name: friends.name,
-          channelId:friends.channelId,
-          otherUID: friends.otherUID,
-          uid: friends.uid,
-          profileUrl: friends.profileUrl,
-          unRead: friends.unRead,
-        ).toEntity().toDocument());
+      if (friend.exists) {
+        return;
       }
+      _userCollection
+          .document((await _firebaseAuth.currentUser()).uid)
+          .collection("friends")
+          .document(friends.otherUID)
+          .setData(Friends(
+        name: friends.name,
+        channelId: friends.channelId,
+        otherUID: friends.otherUID,
+        uid: friends.uid,
+        profileUrl: friends.profileUrl,
+        unRead: friends.unRead,
+        senderName: friends.senderName
+      ).toEntity().toDocument());
+
+      Firestore.instance
+          .collection("user")
+          .document(friends.otherUID)
+          .collection("friends")
+          .document((await _firebaseAuth.currentUser()).uid)
+          .setData(Friends(
+        name: friends.senderName,
+        channelId: friends.channelId,
+        otherUID: friends.uid,
+        uid: friends.otherUID,
+        profileUrl: friends.profileUrl,
+        unRead: friends.unRead,
+        senderName: friends.name
+      ).toEntity().toDocument());
+      return;
     });
   }
+
+  Future<void> updateMessageContentTitle({String content,String uid,String otherUID})async{
+    Map<String,Object> updateMessage=Map();
+
+    if(content.isNotEmpty) updateMessage['content'] = content;
+
+    _userCollection.document(uid).collection("friends").document(otherUID)
+    .updateData(updateMessage);
+    _userCollection.document(otherUID).collection('friends')
+    .document(uid).updateData(updateMessage);
+
+  }
+
+  Stream<List<Friends>> friendsRecord({String uid}) {
+    return _userCollection
+        .document(uid)
+        .collection("friends")
+        .snapshots()
+        .map((querySnapshot) {
+      return querySnapshot.documents
+          .map((snapshot) =>
+              Friends.fromEntity(FriendsEntity.fromSnapshot(snapshot)))
+          .toList();
+    });
+  }
+  //update chatChannelLocation ON/Off
+  Future<void> updateChatChannelLocation({String channelId,bool isLocationEnableCurrentUser,bool isLocationEnableOtherUser,String currentUid,String channelUID,String channelOtherUID})async{
+    Map<String,Object> updateLocationChannel=Map();
+
+    if (currentUid == channelUID){
+      print("currentUID $currentUid ,\nchannelUID $channelUID");
+      if (isLocationEnableOtherUser == false)
+        updateLocationChannel['isLocationCurrentUser'] = isLocationEnableOtherUser;
+      else
+        updateLocationChannel['isLocationCurrentUser'] = isLocationEnableOtherUser;
+
+    }
+
+    if (currentUid == channelOtherUID){
+      print("currentUID $currentUid ,\nchannelOtherUID $channelOtherUID");
+      if (isLocationEnableCurrentUser == false)
+        updateLocationChannel['isLocationOtherUser'] = isLocationEnableCurrentUser;
+      else
+        updateLocationChannel['isLocationOtherUser'] = isLocationEnableCurrentUser;
+    }
+
+    await _chatChannel.document(channelId).updateData(updateLocationChannel);
+    await _LocationChannel.document(channelId).updateData(updateLocationChannel);
+  }
+
+  //locationChannel communication
+
+  Future<void> getCreateLocationChannelSendLocationMessage({String channelID,LocationChannel locationMessage})async{
+    _LocationChannel.document(channelID)
+        .setData(locationMessage.toEntity().toDocument());
+}
 }

@@ -5,7 +5,13 @@ class CallScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: Icon(Icons.add_call,size: 50,)),
+      body: Center(child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Icon(Icons.add_call,size: 50,color: Colors.grey,),
+          Text("Empty Call History",style: TextStyle(color: Colors.grey),)
+        ],
+      )),
     );
   }
 }

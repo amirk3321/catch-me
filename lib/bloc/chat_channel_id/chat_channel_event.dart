@@ -13,8 +13,8 @@ class ChannelIdLoadEvent extends ChatChannelEvent{
 }
 
 class UpdatedChannelId extends ChatChannelEvent{
-  final List<ChatChannel> channelId;
-  UpdatedChannelId({this.channelId}) :super([channelId]);
+  final List<ChatChannel> chatChannels;
+  UpdatedChannelId({this.chatChannels}) :super([chatChannels]);
    @override
      String toString() => "UpdatedChannelId";
 }

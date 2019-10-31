@@ -47,14 +47,6 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   }
 
   Stream<UserState> _mapUpdateUserToState(UpdateUser event) async* {
-//    await _userRepository.onUpdateUserInfo(
-//        name: event.user.name,
-//        status: event.user.status,
-//        profileUrl: event.user.profileUrl,
-//        uid: event.user.uid,
-//        isOnline: event.user.isOnline,
-//        isLocation: event.user.isLocation);
-
     _userRepository.onUpdateUserInfo1(
       name: event.user.name,
       uid: event.user.uid,

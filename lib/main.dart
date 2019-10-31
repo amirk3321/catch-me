@@ -1,6 +1,9 @@
 import 'package:catch_me/bloc/chat_channel_id/bloc.dart';
 import 'package:catch_me/bloc/communication/communication_bloc.dart';
+import 'package:catch_me/bloc/friends/friends_bloc.dart';
+import 'package:catch_me/bloc/location_channel/location_channel_bloc.dart';
 import 'package:catch_me/bloc/user/bloc.dart';
+import 'package:catch_me/model/chat_channel.dart';
 import 'package:catch_me/repository/Firebase_user_repository.dart';
 import 'package:catch_me/screen/home_screen.dart';
 import 'package:catch_me/screen/phone_verify_screen.dart';
@@ -33,6 +36,17 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<CommunicationBloc>(
           builder: (_) => CommunicationBloc(userRepository: FirebaseUserRepository()),
+        ),
+        BlocProvider<FriendsBloc>(
+          builder: (_) => FriendsBloc(repository: FirebaseUserRepository()),
+        ),
+        BlocProvider<ChatChannelBloc>(
+          builder: (_) => ChatChannelBloc(userRepository: FirebaseUserRepository()),
+        ),
+        BlocProvider<LocationChannelBloc>(
+          builder: (_) => LocationChannelBloc(
+            userRepository: FirebaseUserRepository()
+          ),
         ),
       ],
       child: MaterialApp(

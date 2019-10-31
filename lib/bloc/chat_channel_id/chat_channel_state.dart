@@ -14,8 +14,8 @@ class ChatChannelLoading extends ChatChannelState {
 
 
 class LoadedChannelIDs extends ChatChannelState{
-    final List<ChatChannel> channelId;
-    LoadedChannelIDs({this.channelId}) :super([channelId]);
+    final List<ChatChannel> chatChannels;
+    LoadedChannelIDs({this.chatChannels}) :super([chatChannels]);
    @override
-     String toString() => "LoadedChannelIDs";
+     String toString() => "LoadedChannelIDs  ";
 }

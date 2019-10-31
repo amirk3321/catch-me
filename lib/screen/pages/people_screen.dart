@@ -4,6 +4,7 @@ import 'package:catch_me/bloc/chat_channel_id/bloc.dart';
 import 'package:catch_me/bloc/communication/bloc.dart';
 import 'package:catch_me/bloc/user/bloc.dart';
 import 'package:catch_me/model/friends.dart';
+import 'package:catch_me/model/location_channel.dart';
 import 'package:catch_me/model/user.dart';
 import 'package:catch_me/screen/common/single_chat_screen.dart';
 import 'package:flutter/cupertino.dart';
@@ -43,7 +44,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 5),
                     child: Text(
-                      "All friends, tab to start communication",
+                      "All friends, tap to + button add favorite",
                       style: TextStyle(color: Colors.grey),
                     )),
                 Expanded(
@@ -66,18 +67,24 @@ class _PeopleScreenState extends State<PeopleScreen> {
                           subtitle: Text(users[index].status),
                           trailing: IconButton(
                             icon: Icon(Icons.add), onPressed: () {
-
+                              print("senderName ${currentUserRecord.name}");
                             BlocProvider.of<CommunicationBloc>(
                                 context)
                                 .dispatch(CreateChatChannel(
                                 otherUID: otherUID,
                             friends: Friends(
-                              name: users[index].name,
+                              name:users[index].name,
                               uid: widget.uid,
                               otherUID: users[index].uid,
                               unRead: false,
+                              senderName: currentUserRecord.name,
                               profileUrl: ""
-                            )));
+                            ),
+                            currentName: currentUserRecord.name,
+                              otherName: users[index].name,
+                              uid: widget.uid,
+                            ));
+
 
 
                           },

@@ -33,12 +33,12 @@ class ChatChannelBloc extends Bloc<ChatChannelEvent, ChatChannelState> {
   Stream<ChatChannelState> _mapOfChannelIdLoadEventToState() async*{
     _streamSubscription?.cancel();
     _streamSubscription=_userRepository.generatedChannelIds().listen((channelId){
-      dispatch(UpdatedChannelId(channelId: channelId));
+      dispatch(UpdatedChannelId(chatChannels: channelId));
     });
   }
 
   Stream<ChatChannelState> _mapOfUpdatedChannelIdToState(UpdatedChannelId event) async*{
-    yield LoadedChannelIDs(channelId: event.channelId);
+    yield LoadedChannelIDs(chatChannels: event.chatChannels);
   }
 
 

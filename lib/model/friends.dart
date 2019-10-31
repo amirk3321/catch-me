@@ -1,15 +1,17 @@
 import 'package:catch_me/model/friends_entity.dart';
 
 class Friends {
-  String name;
-  String channelId;
-  String otherUID;
-  String uid;
-  String profileUrl;
-  String content;
-  bool unRead;
+  final String senderName;
+  final String name;
+  final String channelId;
+  final String otherUID;
+  final String uid;
+  final String profileUrl;
+  final String content;
+  final bool unRead;
 
   Friends({
+    this.senderName,
     this.name,
     this.channelId,
     this.otherUID,
@@ -21,6 +23,7 @@ class Friends {
 
   @override
   int get hashCode =>
+      senderName.hashCode ^
       name.hashCode ^
       channelId.hashCode ^
       otherUID.hashCode ^
@@ -35,6 +38,7 @@ class Friends {
       other is Friends &&
           runtimeType == other.runtimeType &&
           channelId == other.channelId &&
+          senderName == other.senderName &&
           name == other.name &&
           channelId == other.channelId &&
           otherUID == other.otherUID &&
@@ -45,6 +49,7 @@ class Friends {
 
   FriendsEntity toEntity() {
     return FriendsEntity(
+      this.senderName,
       this.name,
       this.channelId,
       this.otherUID,
@@ -56,6 +61,7 @@ class Friends {
   }
   static Friends fromEntity(FriendsEntity entity){
     return Friends(
+      senderName: entity.senderName,
       name: entity.name,
       channelId: entity.channelId,
       otherUID: entity.otherUID,

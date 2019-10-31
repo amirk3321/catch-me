@@ -1,4 +1,5 @@
 import 'package:catch_me/model/friends.dart';
+import 'package:catch_me/model/location_channel.dart';
 import 'package:catch_me/model/text_message.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
@@ -8,37 +9,88 @@ abstract class CommunicationEvent extends Equatable {
   CommunicationEvent([List props = const <dynamic>[]]) : super(props);
 }
 
-class CreateChatChannel extends CommunicationEvent{
+class CreateChatChannel extends CommunicationEvent {
   final String otherUID;
   final Friends friends;
-  CreateChatChannel({this.otherUID,this.friends}) :super([otherUID]);
-   @override
-     String toString() => "CreateChatChannel";
+  final String currentName;
+  final String otherName;
+  final String uid;
+  CreateChatChannel({this.otherUID, this.friends,this.currentName,this.otherName,this.uid}) : super([otherUID,friends,currentName,otherName,uid]);
+
+  @override
+  String toString() => "CreateChatChannel";
 }
-class AddToStartChat extends CommunicationEvent{
+
+class AddToStartChat extends CommunicationEvent {
   final Friends friends;
+
   AddToStartChat({this.friends}) : super([friends]);
-   @override
-     String toString() => "AddToStartChat";
+
+  @override
+  String toString() => "AddToStartChat";
+}
+
+class AddToOtherStartChat extends CommunicationEvent {
+  final Friends friends;
+
+  AddToOtherStartChat({this.friends}) : super([friends]);
+
+  @override
+  String toString() => "AddToStartChat";
 }
 
 class SendTextMessage extends CommunicationEvent {
   final TextMessage message;
-  SendTextMessage({this.message}) :super([message]);
-   @override
-     String toString() => "SendTextMessage";
+  final String channelID;
+
+  SendTextMessage({this.message, this.channelID}) : super([message]);
+
+  @override
+  String toString() => "SendTextMessage";
 }
 
-class LoadMessages extends CommunicationEvent{
+class LoadMessages extends CommunicationEvent {
   String channelId;
-  LoadMessages({this.channelId}) :super([channelId]);
-   @override
-     String toString() => "LoadMessages";
+
+  LoadMessages({this.channelId}) : super([channelId]);
+
+  @override
+  String toString() => "LoadMessages";
 }
 
 class MessagesUpdated extends CommunicationEvent {
   final List<TextMessage> messages;
-  MessagesUpdated({this.messages}) :super([messages]);
-   @override
-     String toString() => "MessagesUpdated";
+
+  MessagesUpdated({this.messages}) : super([messages]);
+
+  @override
+  String toString() => "MessagesUpdated";
+}
+
+class UpdateChannelLocation extends CommunicationEvent {
+  final bool isLocationEnableCurrentUser;
+  final bool isLocationEnableOtherUser;
+  final String channelID;
+ final String currentUID;
+  final String channelUID;
+  final String channelOtherUID;
+
+  UpdateChannelLocation(
+      {this.isLocationEnableCurrentUser,
+      this.isLocationEnableOtherUser,
+      this.channelID,
+      this.currentUID,
+      this.channelUID,
+      this.channelOtherUID
+      })
+      : super([
+          isLocationEnableCurrentUser,
+          isLocationEnableOtherUser,
+          channelID,
+          currentUID,
+          channelUID
+        ]);
+
+  @override
+  String toString() => "UpdateChannelLocation";
 }

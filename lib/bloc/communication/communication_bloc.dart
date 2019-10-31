@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:catch_me/bloc/user/bloc.dart';
+import 'package:catch_me/model/chat_channel.dart';
 import 'package:catch_me/model/friends.dart';
+import 'package:catch_me/model/location_channel.dart';
 import 'package:catch_me/model/user.dart';
 import 'package:catch_me/repository/Firebase_user_repository.dart';
 import 'package:catch_me/utils/shared_pref.dart';
@@ -38,6 +40,8 @@ class CommunicationBloc extends Bloc<CommunicationEvent, CommunicationState> {
       yield* _mapOfLoadMessagesToState(event);
     }else  if(event is MessagesUpdated){
       yield* _mapOfMessagesUpdatedToState(event);
+    }else if (event is UpdateChannelLocation){
+      yield* _mapOfUpdateChannelLocationToState(event);
     }
   }
   Stream<CommunicationState> _mapOfCreateChatChannelToState(
@@ -57,6 +61,21 @@ class CommunicationBloc extends Bloc<CommunicationEvent, CommunicationState> {
               content: event.friends.content,
               profileUrl: event.friends.profileUrl,
               unRead: event.friends.unRead,
+              senderName: event.friends.senderName
+            )
+          );
+         await _userRepository.getCreateLocationChannelSendLocationMessage(
+            channelID: channelId,
+            locationMessage: LocationChannel(
+              channelID: channelId,
+              uid: event.uid,
+              otherUID: event.otherUID,
+              currentName: event.currentName,
+              otherName: event.otherName,
+              currentUserPoints: null,
+              otherUserUserPoints: null,
+              isLocationCurrentUser: false,
+              isLocationOtherUser: false,
             )
           );
           await SharedPref.setChatChannelID(channelId: channelId);
@@ -99,15 +118,14 @@ class CommunicationBloc extends Bloc<CommunicationEvent, CommunicationState> {
 
   Stream<CommunicationState> _mapOfSendTextMessageToState(
       SendTextMessage event) async* {
-    String channelId = await SharedPref.getChatChannelID();
-    print("MessageChannelId $channelId");
-    _userRepository.sendTextMessage(
-        message: event.message, channelId: channelId);
+    await _userRepository.sendTextMessage(
+        message: event.message, channelId: event.channelID);
   }
 
   Stream<CommunicationState> _mapOfLoadMessagesToState(LoadMessages event) async* {
-    String channelId = await SharedPref.getChatChannelID();
-    print("customChannelId $channelId");
+//    String channelId = await SharedPref.getChatChannelID();
+//    print("customChannelId $channelId");
+    yield CommunicationLoading();
     _messagesStreamSubscription?.cancel();
     _messagesStreamSubscription =
         _userRepository.messages(channelId: event.channelId).listen((messages) {
@@ -118,5 +136,16 @@ class CommunicationBloc extends Bloc<CommunicationEvent, CommunicationState> {
   }
   Stream<CommunicationState> _mapOfMessagesUpdatedToState(MessagesUpdated event) async*{
    yield CommunicationLoaded(messages: event.messages);
+  }
+
+  Stream<CommunicationState> _mapOfUpdateChannelLocationToState(UpdateChannelLocation event) async*{
+    _userRepository.updateChatChannelLocation(
+      channelId: event.channelID,
+      isLocationEnableCurrentUser: event.isLocationEnableCurrentUser,
+      isLocationEnableOtherUser: event.isLocationEnableOtherUser,
+        currentUid: event.currentUID,
+      channelUID: event.channelUID,
+        channelOtherUID: event.channelOtherUID
+    );
   }
 }

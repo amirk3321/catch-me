@@ -28,8 +28,6 @@ class GoogleScreenState extends State<GoogleScreen> {
       setState(() {
 
         _currentLocation = LatLng(locationData.latitude, locationData.longitude);
-        print(
-            'latitude ${locationData.latitude}, longitude ${locationData.longitude}');
       });
     });
     super.initState();
@@ -45,6 +43,7 @@ class GoogleScreenState extends State<GoogleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: Text("Live Stream"),),
       body: Stack(
         children: <Widget>[
           _currentLocation ==null ? Center(child: CircularProgressIndicator(),) :GoogleMap(
@@ -94,7 +93,7 @@ class GoogleScreenState extends State<GoogleScreen> {
           );
         },
         child: Icon(Icons.my_location),
-      ),
+      )
     );
   }
 }
