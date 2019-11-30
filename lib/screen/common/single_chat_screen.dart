@@ -7,8 +7,8 @@ import 'package:catch_me/bloc/communication/bloc.dart';
 import 'package:catch_me/bloc/friends/friends_bloc.dart';
 import 'package:catch_me/bloc/friends/friends_event.dart';
 import 'package:catch_me/bloc/user/bloc.dart';
-import 'package:catch_me/google_screen.dart';
-import 'package:catch_me/model/friends.dart';
+import 'package:catch_me/model/chat_channel.dart';
+import 'package:catch_me/screen/common/google_screen.dart';
 import 'package:catch_me/model/text_message.dart';
 import 'package:catch_me/model/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,6 +17,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:location/location.dart';
 
 class SingleChatScreen extends StatefulWidget {
   final String name;
@@ -41,18 +42,53 @@ class SingleChatScreen extends StatefulWidget {
 }
 
 class _SingleChatScreenState extends State<SingleChatScreen> {
+  Location _location = Location();
+  StreamSubscription _subscription;
   bool _isLocationEnable = false;
-  TextEditingController _messageController = TextEditingController();
+  String _resultText = "";
+  TextEditingController _messageController;
   ScrollController _scrollController = ScrollController();
+
+  //temporary solution of update location
+  GeoPoint _currentUserLocation;
+  GeoPoint _otherUserLocation;
+  String _currentUID = "";
+  String _otherUserUID = "";
 
   @override
   void initState() {
+    _messageController = TextEditingController(text: _resultText);
     BlocProvider.of<CommunicationBloc>(context)
         .dispatch(LoadMessages(channelId: widget.channelId));
     BlocProvider.of<ChatChannelBloc>(context).dispatch(ChannelIdLoadEvent());
+    print("checkUID ${widget.uid},otherUID $_otherUserUID");
+    _subscription?.cancel();
+    _subscription = _location.onLocationChanged().listen((locationData) {
+          if (widget.uid == _currentUID && _isLocationEnable == true) {
+            _currentUserLocation =
+                GeoPoint(locationData.latitude, locationData.longitude);
 
+            BlocProvider.of<CommunicationBloc>(context).dispatch(UpdateLocationTemp(
+              channelID: widget.channelId,
+              currentUserPoints: _currentUserLocation
+            ));
+            print(
+                "currentUserLocationCheck $_isLocationEnable, $_currentUID ${_currentUserLocation.latitude}");
+          } else if (widget.uid == _otherUserUID && _isLocationEnable == true) {
+            _otherUserLocation =
+                GeoPoint(locationData.latitude, locationData.longitude);
+            BlocProvider.of<CommunicationBloc>(context).dispatch(UpdateLocationTemp(
+                channelID: widget.channelId,
+                otherUserPoints: _otherUserLocation
+            ));
+            print(
+                "OtherUserLocationCheck $_isLocationEnable , $_otherUserUID ${_otherUserLocation.latitude},${_otherUserLocation.longitude}");
+          } else {
+            print("Temporary solution Data is empty $_isLocationEnable");
+          }
+    });
     _messageController.addListener(() {
-      setState(() {});
+      if (mounted) setState(() {});
     });
     super.initState();
   }
@@ -73,13 +109,11 @@ class _SingleChatScreenState extends State<SingleChatScreen> {
                 ),
                 Switch(
                   onChanged: (value) {
-                    setState(() {
-                      _isLocationEnable = value;
-                    });
-//                    BlocProvider.of<CommunicationBloc>(context).dispatch(UpdateChannelLocation(
-//                        channelID: widget.channelId,
-//                        isLocationEnableCurrentUser: widget.uid ==
-//                    ));
+                    if (mounted)
+                      setState(() {
+                        _isLocationEnable = value;
+                      });
+                    _location.requestPermission();
                   },
                   value: _isLocationEnable,
                 )
@@ -91,16 +125,19 @@ class _SingleChatScreenState extends State<SingleChatScreen> {
             ),
           );
         }
+
         if (state is CommunicationLoaded) {
           return BlocBuilder<ChatChannelBloc, ChatChannelState>(
             builder: (BuildContext context, ChatChannelState chatChannelState) {
               if (chatChannelState is LoadedChannelIDs) {
                 final chatChannelId = chatChannelState.chatChannels.firstWhere(
-                    (channelIds) => channelIds.channelId == widget.channelId);
+                    (channelIds) => channelIds.channelId == widget.channelId,
+                    orElse: () => ChatChannel());
                 Timer(
                     Duration(milliseconds: 100),
                     () => _scrollController
                         .jumpTo(_scrollController.position.maxScrollExtent));
+
                 return BlocBuilder<UserBloc, UserState>(
                   builder: (context, UserState userState) {
                     if (userState is UsersLoaded) {
@@ -109,30 +146,47 @@ class _SingleChatScreenState extends State<SingleChatScreen> {
                           orElse: () => User());
 
                       final messages = state.messages;
+
                       return Scaffold(
                         appBar: AppBar(
                           actions: <Widget>[
                             IconButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                print("checkID $_otherUserUID");
+                              },
                               tooltip: "voice communictaion",
                               autofocus: true,
                               icon: Icon(Icons.call),
                             ),
                             IconButton(
-                              onPressed: chatChannelId.isLocationOtherUser==false && chatChannelId.isLocationCurrentUser ==false ? null :() {
-                                Navigator.push(context, MaterialPageRoute(
-                                  builder: (_) => GoogleScreen()
-                                ));
-                              },
+                              onPressed: chatChannelId.isLocationOtherUser ==
+                                          false &&
+                                      chatChannelId.isLocationCurrentUser ==
+                                          false
+                                  ? null
+                                  : () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (_) => GoogleScreen(
+                                                    otherName: widget.name,
+                                                    otherUID:
+                                                        chatChannelId.otherUId,
+                                                    uid: widget.uid,
+                                                    channelID:
+                                                        chatChannelId.channelId,
+                                                  )));
+                                    },
                               tooltip: "View Google Map",
                               autofocus: true,
                               icon: Icon(Icons.map),
                             ),
                             Switch(
                               onChanged: (value) {
-                                setState(() {
-                                  _isLocationEnable = value;
-                                });
+                                if (mounted)
+                                  setState(() {
+                                    _isLocationEnable = value;
+                                  });
                                 BlocProvider.of<CommunicationBloc>(context)
                                     .dispatch(UpdateChannelLocation(
                                         channelID: widget.channelId,
@@ -143,11 +197,24 @@ class _SingleChatScreenState extends State<SingleChatScreen> {
                                         channelOtherUID:
                                             chatChannelId.otherUId));
 
-                                if (widget.uid == chatChannelId.uid){
-                                  Fluttertoast.showToast(msg: chatChannelId.uid);
-                                }else if(widget.uid == chatChannelId.otherUId){
-                                  Fluttertoast.showToast(msg: chatChannelId.otherUId);
-                                }
+                               setState(() {
+
+                               });
+                                setState(() {
+                                  if(widget.uid == chatChannelId.otherUId) {
+                                    _otherUserUID=chatChannelId.otherUId;
+
+
+                                    Fluttertoast.showToast(
+                                        msg: "otherUID ${chatChannelId.otherUId}");
+                                  }else{
+                                      _currentUID = chatChannelId.uid;
+
+                                    Fluttertoast.showToast(
+                                        msg: "UID ${chatChannelId.uid}");
+                                  }
+                                });
+
                               },
                               value: widget.uid == chatChannelId.uid
                                   ? chatChannelId.isLocationCurrentUser
@@ -218,15 +285,15 @@ class _SingleChatScreenState extends State<SingleChatScreen> {
                                             hintText: "type feel free.. :) <3"),
                                       ),
                                     ),
-                                    _messageController.text.isNotEmpty
-                                        ? Text('')
-                                        : IconButton(
-                                            onPressed: () {},
+                                    _messageController.text.isEmpty
+                                        ? IconButton(
                                             icon: Icon(
-                                              Icons.mic,
-                                              color: Colors.red,
+                                              Icons.keyboard_voice,
+                                              color: Colors.red[700],
                                             ),
-                                          ),
+                                            onPressed: () {},
+                                          )
+                                        : Text(""),
                                     IconButton(
                                       onPressed: _messageController.text.isEmpty
                                           ? null
@@ -281,6 +348,7 @@ class _SingleChatScreenState extends State<SingleChatScreen> {
             },
           );
         }
+
         return Scaffold(
           appBar: AppBar(
             actions: <Widget>[
@@ -292,9 +360,10 @@ class _SingleChatScreenState extends State<SingleChatScreen> {
               ),
               Switch(
                 onChanged: (value) {
-                  setState(() {
-                    _isLocationEnable = value;
-                  });
+                  if (mounted)
+                    setState(() {
+                      _isLocationEnable = value;
+                    });
                 },
                 value: _isLocationEnable,
               )
@@ -338,13 +407,10 @@ class _SingleChatScreenState extends State<SingleChatScreen> {
         ],
       );
 
-  bool check(bool current, bool other, String currentUID, String channelUID,
-      String channelOtherUID) {
-    if (current == true && currentUID == channelUID)
-      return true;
-    else if (other == true && currentUID == channelOtherUID)
-      return true;
-    else
-      return false;
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _messageController.dispose();
+    super.dispose();
   }
 }

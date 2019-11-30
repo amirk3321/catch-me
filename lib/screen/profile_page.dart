@@ -204,6 +204,7 @@ class ProfilePageState extends State<ProfilePage> {
             actions: <Widget>[
               RaisedButton(
                 onPressed: () {
+                  if (mounted)
                   setState(() {
                     _nameController.text = _nameController.text;
                     _statusController.text = _statusController.text;
@@ -246,7 +247,7 @@ class ProfilePageState extends State<ProfilePage> {
 
   void _imagePicker() async {
     var galleryFile = await ImagePicker.pickImage(source: ImageSource.gallery);
-
+    if (mounted)
     setState(() {
       _image = galleryFile.path;
     });

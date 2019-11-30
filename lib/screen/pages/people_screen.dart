@@ -124,25 +124,6 @@ class _PeopleScreenState extends State<PeopleScreen> {
     );
   }
 
-  void _friendRequestController() {
-    if (_requstController == RequestController.SEND_FRIEND_REQUEST) {
-      setState(() {
-        _requstController = RequestController.CANCEL_FRIEND_REQUEST;
-        _buttonName = "Cancel";
-      });
-    } else if (_requstController == RequestController.CANCEL_FRIEND_REQUEST) {
-      setState(() {
-        _requstController = RequestController.SEND_FRIEND_REQUEST;
-        _buttonName = "Add me";
-      });
-    }
-    if (_requstController == RequestController.FRIEND) {
-      setState(() {
-        _requstController = RequestController.CANCEL_FRIEND_REQUEST;
-        _buttonName = "UnFriend";
-      });
-    }
-  }
 
   Center get centerErrorMessage => Center(
         child: Column(

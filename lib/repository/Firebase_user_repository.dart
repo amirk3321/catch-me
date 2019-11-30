@@ -244,14 +244,15 @@ class FirebaseUserRepository implements BaseRepo {
           .collection("friends")
           .document(friends.otherUID)
           .setData(Friends(
-        name: friends.name,
-        channelId: friends.channelId,
-        otherUID: friends.otherUID,
-        uid: friends.uid,
-        profileUrl: friends.profileUrl,
-        unRead: friends.unRead,
-        senderName: friends.senderName
-      ).toEntity().toDocument());
+                  name: friends.name,
+                  channelId: friends.channelId,
+                  otherUID: friends.otherUID,
+                  uid: friends.uid,
+                  profileUrl: friends.profileUrl,
+                  unRead: friends.unRead,
+                  senderName: friends.senderName)
+              .toEntity()
+              .toDocument());
 
       Firestore.instance
           .collection("user")
@@ -259,28 +260,35 @@ class FirebaseUserRepository implements BaseRepo {
           .collection("friends")
           .document((await _firebaseAuth.currentUser()).uid)
           .setData(Friends(
-        name: friends.senderName,
-        channelId: friends.channelId,
-        otherUID: friends.uid,
-        uid: friends.otherUID,
-        profileUrl: friends.profileUrl,
-        unRead: friends.unRead,
-        senderName: friends.name
-      ).toEntity().toDocument());
+                  name: friends.senderName,
+                  channelId: friends.channelId,
+                  otherUID: friends.uid,
+                  uid: friends.otherUID,
+                  profileUrl: friends.profileUrl,
+                  unRead: friends.unRead,
+                  senderName: friends.name)
+              .toEntity()
+              .toDocument());
       return;
     });
   }
 
-  Future<void> updateMessageContentTitle({String content,String uid,String otherUID})async{
-    Map<String,Object> updateMessage=Map();
+  Future<void> updateMessageContentTitle(
+      {String content, String uid, String otherUID}) async {
+    Map<String, Object> updateMessage = Map();
 
-    if(content.isNotEmpty) updateMessage['content'] = content;
+    if (content.isNotEmpty) updateMessage['content'] = content;
 
-    _userCollection.document(uid).collection("friends").document(otherUID)
-    .updateData(updateMessage);
-    _userCollection.document(otherUID).collection('friends')
-    .document(uid).updateData(updateMessage);
-
+    _userCollection
+        .document(uid)
+        .collection("friends")
+        .document(otherUID)
+        .updateData(updateMessage);
+    _userCollection
+        .document(otherUID)
+        .collection('friends')
+        .document(uid)
+        .updateData(updateMessage);
   }
 
   Stream<List<Friends>> friendsRecord({String uid}) {
@@ -295,35 +303,73 @@ class FirebaseUserRepository implements BaseRepo {
           .toList();
     });
   }
-  //update chatChannelLocation ON/Off
-  Future<void> updateChatChannelLocation({String channelId,bool isLocationEnableCurrentUser,bool isLocationEnableOtherUser,String currentUid,String channelUID,String channelOtherUID})async{
-    Map<String,Object> updateLocationChannel=Map();
+  //temporary solution location update
+  Future<void> updateLocationTemp({ GeoPoint currentUserPoints,
+    GeoPoint otherUserPoints,String channelId,})async{
+    Map<String, Object> updateLocationChannel = Map();
+    //update user location
+    if (currentUserPoints !=null) updateLocationChannel['currentUserPoints'] = currentUserPoints;
+    if (otherUserPoints !=null) updateLocationChannel['otherUserUserPoints'] = otherUserPoints;
 
-    if (currentUid == channelUID){
+
+    await _LocationChannel.document(channelId)
+        .updateData(updateLocationChannel);
+  }
+  //update chatChannelLocation ON/Off
+  Future<void> updateChatChannelLocation({
+    String channelId,
+    bool isLocationEnableCurrentUser,
+    bool isLocationEnableOtherUser,
+    String currentUid,
+    String channelUID,
+    String channelOtherUID,
+    GeoPoint currentUserPoints,
+    GeoPoint otherUserPoints,
+  }) async {
+    Map<String, Object> updateLocationChannel = Map();
+
+    if (currentUid == channelUID) {
       print("currentUID $currentUid ,\nchannelUID $channelUID");
       if (isLocationEnableOtherUser == false)
-        updateLocationChannel['isLocationCurrentUser'] = isLocationEnableOtherUser;
+        updateLocationChannel['isLocationCurrentUser'] =
+            isLocationEnableOtherUser;
       else
-        updateLocationChannel['isLocationCurrentUser'] = isLocationEnableOtherUser;
-
+        updateLocationChannel['isLocationCurrentUser'] =
+            isLocationEnableOtherUser;
     }
 
-    if (currentUid == channelOtherUID){
+    if (currentUid == channelOtherUID) {
       print("currentUID $currentUid ,\nchannelOtherUID $channelOtherUID");
       if (isLocationEnableCurrentUser == false)
-        updateLocationChannel['isLocationOtherUser'] = isLocationEnableCurrentUser;
+        updateLocationChannel['isLocationOtherUser'] =
+            isLocationEnableCurrentUser;
       else
-        updateLocationChannel['isLocationOtherUser'] = isLocationEnableCurrentUser;
+        updateLocationChannel['isLocationOtherUser'] =
+            isLocationEnableCurrentUser;
     }
+    //update user location
+    if (currentUserPoints !=null) updateLocationChannel['currentUserPoints'] = currentUserPoints;
+    if (otherUserPoints !=null) updateLocationChannel['otherUserUserPoints'] = otherUserPoints;
 
     await _chatChannel.document(channelId).updateData(updateLocationChannel);
-    await _LocationChannel.document(channelId).updateData(updateLocationChannel);
+    await _LocationChannel.document(channelId)
+        .updateData(updateLocationChannel);
   }
 
   //locationChannel communication
 
-  Future<void> getCreateLocationChannelSendLocationMessage({String channelID,LocationChannel locationMessage})async{
+  Future<void> getCreateLocationChannelSendLocationMessage(
+      {String channelID, LocationChannel locationMessage}) async {
     _LocationChannel.document(channelID)
         .setData(locationMessage.toEntity().toDocument());
-}
+  }
+
+  Stream<List<LocationChannel>> locations() {
+    return _LocationChannel.snapshots().map((querySnapshot) {
+      return querySnapshot.documents
+          .map((snapshot) => LocationChannel.fromEntity(
+              LocationChannelEntity.fromSnapshot(snapshot)))
+          .toList();
+    });
+  }
 }

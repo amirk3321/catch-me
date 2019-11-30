@@ -7,12 +7,17 @@ abstract class LocationChannelEvent extends Equatable {
   LocationChannelEvent([List props = const <dynamic>[]]) : super(props);
 }
 
-class CreateLocationChannel extends LocationChannelEvent {
+class LoadLocation extends LocationChannelEvent {
   final String channelId;
-  final LocationChannel locationChannel;
 
-  CreateLocationChannel({this.channelId,this.locationChannel}) : super([channelId,locationChannel]);
+  LoadLocation({this.channelId}) : super([channelId]);
 
   @override
   String toString() => "MessagesUpdated";
+}
+class LocationUpdated extends LocationChannelEvent{
+  final List<LocationChannel> locations;
+  LocationUpdated({this.locations}) :super([locations]);
+   @override
+     String toString() => "LocationUpdated";
 }

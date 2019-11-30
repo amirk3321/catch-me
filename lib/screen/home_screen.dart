@@ -11,7 +11,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../google_screen.dart';
+import 'common/google_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String uid;
@@ -45,6 +45,7 @@ class HomeScreenState extends State<HomeScreen>
                 TabData(iconData: Icons.call, title: "call")
               ],
               onTabChangedListener: (index){
+                if (mounted)
                 setState(() {
                   _indexBottomNavBarController=index;
                 });
